@@ -1,0 +1,192 @@
+"""Command parsing, user-facing output, file input, and the interactive loop."""
+
+from __future__ import annotations
+
+import shlex
+from pathlib import Path
+from typing import Iterable
+
+from .benchmark import run_benchmark
+from .diff import line_diff
+from .models import Commit
+from .repository import Repository, RepositoryError
+
+
+class MiniGit:
+    """Adapt text commands to repository operations and format their results."""
+
+    def __init__(self, repository: Repository | None = None) -> None:
+        self.repository = repository if repository is not None else Repository()
+
+    def _branch_labels(self, commit_hash: str) -> str:
+        names = [
+            name for name, target in self.repository.branches.items() if target == commit_hash
+        ]
+        return f" [{' '.join(names)}]" if names else ""
+
+    def _format_commits(self, commits: Iterable[Commit], show_branches: bool = False) -> str:
+        blocks: list[str] = []
+        for commit in commits:
+            timestamp = commit.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
+            labels = self._branch_labels(commit.hash) if show_branches else ""
+            blocks.append(
+                f"commit {commit.hash} ({commit.author}, {timestamp}){labels}\n{commit.message}"
+            )
+        return "\n\n".join(blocks) if blocks else "No commits."
+
+    def _format_created_commit(self, commit: Commit) -> str:
+        return f"[{self.repository.current_branch} {commit.hash}] {commit.message}"
+
+    @staticmethod
+    def _require_count(args: list[str], count: int) -> None:
+        if len(args) != count:
+            raise RepositoryError("invalid_args")
+
+    @staticmethod
+    def _format_error(error: RepositoryError) -> str:
+        messages = {
+            "invalid_args": "Invalid args",
+            "not_initialized": "Repository not initialized.",
+            "unknown_branch": f"Unknown branch: {error.detail}",
+            "unknown_commit": f"Unknown commit: {error.detail}",
+        }
+        return messages[error.code]
+
+    def execute(self, line: str) -> str:
+        """Parse one command and translate domain failures into CLI messages."""
+
+        try:
+            parts = shlex.split(line)
+        except ValueError:
+            return "Invalid args"
+        if not parts:
+            return "Invalid args"
+
+        command, args = parts[0].lower(), parts[1:]
+        if command in {"exit", "quit"}:
+            return "__EXIT__" if not args else "Invalid args"
+        handlers = {
+            "init": self._init,
+            "branch": self._branch,
+            "switch": self._switch,
+            "commit": self._commit,
+            "log": self._log,
+            "path": self._path,
+            "ancestors": self._ancestors,
+            "search": self._search,
+            "diff": self._diff,
+            "merge": self._merge,
+            "benchmark": self._benchmark,
+        }
+        handler = handlers.get(command)
+        if handler is None:
+            return "Invalid args"
+        try:
+            if command != "init":
+                self.repository.require_initialized()
+            return handler(args)
+        except RepositoryError as error:
+            return self._format_error(error)
+
+    def _init(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        self.repository.initialize(args[0])
+        return (
+            "Initialized repository.\n"
+            "Current branch: main\n"
+            f"Current user: {self.repository.author}"
+        )
+
+    def _branch(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        self.repository.create_branch(args[0])
+        return f"Created branch: {args[0]}"
+
+    def _switch(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        self.repository.switch(args[0])
+        return f"Switched to branch: {args[0]}"
+
+    def _commit(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        return self._format_created_commit(self.repository.commit(args[0]))
+
+    def _log(self, args: list[str]) -> str:
+        if not args:
+            return self._format_commits(self.repository.log(), show_branches=True)
+        self._require_count(args, 1)
+        option = args[0].lower()
+        if option not in {"--sort-by=date", "--sort-by=author"}:
+            return "Invalid args"
+        return self._format_commits(self.repository.log(option.split("=", 1)[1]))
+
+    def _path(self, args: list[str]) -> str:
+        self._require_count(args, 2)
+        path = self.repository.path(args[0], args[1])
+        return "No path" if path is None else f"Path: {' -> '.join(path)}"
+
+    def _ancestors(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        return self._format_commits(self.repository.ancestors(args[0]))
+
+    def _search(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        argument = args[0]
+        if argument.lower().startswith("--author="):
+            commits = self.repository.search(argument[len("--author="):], by_author=True)
+        elif argument.startswith("--"):
+            return "Invalid args"
+        else:
+            commits = self.repository.search(argument)
+        lines = [f"Found {len(commits)} commit(s):"]
+        for commit in commits:
+            lines.append(f"- {commit.hash} ({commit.author}): {commit.message}")
+        return "\n".join(lines)
+
+    def _diff(self, args: list[str]) -> str:
+        self._require_count(args, 2)
+        try:
+            old_lines = Path(args[0]).read_text(encoding="utf-8").splitlines()
+            new_lines = Path(args[1]).read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeError) as error:
+            return f"File error: {error}"
+        result = line_diff(old_lines, new_lines)
+        return "\n".join(result) if result else "No differences."
+
+    def _merge(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        return self._format_created_commit(self.repository.merge(args[0]))
+
+    def _benchmark(self, args: list[str]) -> str:
+        self._require_count(args, 1)
+        try:
+            result = run_benchmark(int(args[0]))
+        except ValueError:
+            return "Invalid args"
+        if not result.verified:
+            return "Benchmark verification failed."
+        return (
+            f"Input size: {result.size}\n"
+            f"Merge sort: {result.merge_seconds:.6f}s\n"
+            f"Insertion sort: {result.insertion_seconds:.6f}s"
+        )
+
+
+def repl() -> None:
+    """Run the interactive Mini Git read-evaluate-print loop."""
+
+    app = MiniGit()
+    while True:
+        try:
+            line = input("mini-git> ")
+        except EOFError:
+            print()
+            break
+        except KeyboardInterrupt:
+            print("\nUse exit or quit to close Mini Git.")
+            continue
+
+        result = app.execute(line)
+        if result == "__EXIT__":
+            break
+        print(result)
