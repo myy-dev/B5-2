@@ -1,4 +1,4 @@
-"""Repository state and operations, independent of CLI parsing and output."""
+"""CLI와 분리된 저장소 상태 및 기능 관리"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .sorting import compare_author, compare_date, merge_sort
 
 
 class RepositoryError(ValueError):
-    """A domain failure for the caller to translate into user-facing output."""
+    """CLI 오류 메시지 변환용 저장소 예외"""
 
     def __init__(self, code: str, detail: str = "") -> None:
         super().__init__(code, detail)
@@ -21,7 +21,7 @@ class RepositoryError(ValueError):
 
 
 class Repository:
-    """Manage branches and keep commits, indexes, and HEAD in sync."""
+    """브랜치 관리 및 커밋·색인·HEAD 동기화"""
 
     def __init__(self) -> None:
         self.graph = CommitGraph()
@@ -33,18 +33,18 @@ class Repository:
 
     @property
     def initialized(self) -> bool:
-        """Whether a user and current branch have been configured."""
+        """작성자 및 현재 브랜치 설정 여부"""
 
         return self.author is not None and self.current_branch is not None
 
     @property
     def head(self) -> str | None:
-        """Return the current branch tip, if present."""
+        """현재 브랜치의 마지막 커밋 해시 조회"""
 
         return None if self.current_branch is None else self.branches[self.current_branch]
 
     def require_initialized(self) -> None:
-        """Reject operations before repository initialization."""
+        """저장소 초기화 여부 검사"""
 
         if not self.initialized:
             raise RepositoryError("not_initialized")
@@ -54,7 +54,7 @@ class Repository:
             raise RepositoryError("unknown_commit", commit_hash)
 
     def initialize(self, author: str) -> None:
-        """Reset repository data while preserving the session hash counter."""
+        """세션 해시 카운터 유지 및 저장소 초기화"""
 
         if not author.strip():
             raise RepositoryError("invalid_args")
@@ -65,7 +65,7 @@ class Repository:
         self.author = author
 
     def create_branch(self, name: str) -> None:
-        """Create a branch at HEAD, rejecting empty or duplicate names."""
+        """빈 이름·중복 이름 검사 후 HEAD 위치에 브랜치 생성"""
 
         self.require_initialized()
         if not name.strip() or name in self.branches:
@@ -73,7 +73,7 @@ class Repository:
         self.branches[name] = self.head
 
     def switch(self, name: str) -> None:
-        """Select an existing branch without changing its tip."""
+        """기존 브랜치로 전환"""
 
         self.require_initialized()
         if name not in self.branches:
@@ -81,7 +81,7 @@ class Repository:
         self.current_branch = name
 
     def _new_hash(self, message: str, parents: tuple[str, ...]) -> str:
-        """Create a session-unique hash with a monotonic prefix."""
+        """증가하는 접두사를 이용한 세션 내 고유 해시 생성"""
 
         self._commit_counter += 1
         unique_prefix = f"{self._commit_counter:08x}"
@@ -104,7 +104,7 @@ class Repository:
         return commit
 
     def commit(self, message: str) -> Commit:
-        """Create a commit at HEAD and update all repository references."""
+        """HEAD 기준 커밋 생성 및 저장소 참조 갱신"""
 
         self.require_initialized()
         if not message.strip():
@@ -113,7 +113,7 @@ class Repository:
         return self._create_commit(message, parents)
 
     def merge(self, target_branch: str) -> Commit:
-        """Create a two-parent commit from distinct, nonempty branch tips."""
+        """서로 다른 두 브랜치의 마지막 커밋을 부모로 병합 커밋 생성"""
 
         self.require_initialized()
         if target_branch not in self.branches:
@@ -132,7 +132,7 @@ class Repository:
         )
 
     def log(self, sort_by: str | None = None) -> list[Commit]:
-        """Return parent-first commits or an explicitly sorted commit list."""
+        """부모 우선 또는 지정 기준의 커밋 목록 정렬"""
 
         self.require_initialized()
         if sort_by is None:
@@ -143,7 +143,7 @@ class Repository:
         return merge_sort(self.graph.commits.values(), comparators[sort_by])
 
     def path(self, start: str, end: str) -> list[str] | None:
-        """Return the shortest undirected path between existing commits."""
+        """커밋 간 무방향 최단 경로 탐색"""
 
         self.require_initialized()
         self._require_commit(start)
@@ -151,14 +151,14 @@ class Repository:
         return self.graph.shortest_path(start, end)
 
     def ancestors(self, commit_hash: str) -> list[Commit]:
-        """Return unique ancestors in parent-first order."""
+        """중복 없는 조상 커밋의 부모 우선 조회"""
 
         self.require_initialized()
         self._require_commit(commit_hash)
         return self.graph.ancestors(commit_hash)
 
     def search(self, query: str, *, by_author: bool = False) -> list[Commit]:
-        """Return indexed keyword, phrase, or author matches."""
+        """색인 기반 키워드·구문·작성자 검색"""
 
         self.require_initialized()
         if not query.strip():

@@ -1,4 +1,4 @@
-"""Command parsing, user-facing output, file input, and the interactive loop."""
+"""명령어 분석·결과 출력·파일 입력·대화형 실행"""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from .repository import Repository, RepositoryError
 
 
 class MiniGit:
-    """Adapt text commands to repository operations and format their results."""
+    """텍스트 명령어의 저장소 기능 연결 및 결과 형식화"""
 
     def __init__(self, repository: Repository | None = None) -> None:
         self.repository = repository if repository is not None else Repository()
@@ -53,7 +53,7 @@ class MiniGit:
         return messages[error.code]
 
     def execute(self, line: str) -> str:
-        """Parse one command and translate domain failures into CLI messages."""
+        """명령어 분석 및 저장소 예외의 CLI 메시지 변환"""
 
         try:
             parts = shlex.split(line)
@@ -173,7 +173,7 @@ class MiniGit:
 
 
 def repl() -> None:
-    """Run the interactive Mini Git read-evaluate-print loop."""
+    """미니 깃 대화형 입력·실행·출력 반복"""
 
     app = MiniGit()
     while True:

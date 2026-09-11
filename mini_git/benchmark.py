@@ -1,4 +1,4 @@
-"""Deterministic benchmark input and timing for the two manual sorts."""
+"""재현 가능한 입력 기반 두 정렬의 성능 측정"""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from .sorting import compare_number, insertion_sort, merge_sort
 
 @dataclass(frozen=True)
 class BenchmarkResult:
-    """Measured durations and agreement between sorting algorithms."""
+    """정렬별 실행 시간 및 결과 일치 여부"""
 
     size: int
     merge_seconds: float
@@ -19,7 +19,7 @@ class BenchmarkResult:
 
 
 def run_benchmark(size: int) -> BenchmarkResult:
-    """Measure both sorts on identical input of 1 to 5000 elements."""
+    """동일한 입력 1~5000개에 대한 두 정렬의 실행 시간 측정"""
 
     if size < 1 or size > 5000:
         raise ValueError("size must be between 1 and 5000")

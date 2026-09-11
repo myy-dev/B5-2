@@ -1,4 +1,4 @@
-"""Direct checks of graph and sorting algorithms."""
+"""그래프 및 정렬 알고리즘 검증"""
 
 import unittest
 from datetime import datetime

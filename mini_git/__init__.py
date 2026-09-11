@@ -1,1 +1,1 @@
-"""In-memory Mini Git models, algorithms, repository, and CLI."""
+"""메모리 기반 미니 깃 모델·알고리즘·저장소·CLI"""

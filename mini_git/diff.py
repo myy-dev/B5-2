@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 def line_diff(old_lines: list[str], new_lines: list[str]) -> list[str]:
-    """Build a line diff using a longest-common-subsequence dynamic program."""
+    """최장 공통 부분 수열 동적 계획법 기반 줄 단위 차이 계산"""
 
     old_count = len(old_lines)
     new_count = len(new_lines)

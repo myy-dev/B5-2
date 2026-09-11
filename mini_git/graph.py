@@ -6,20 +6,20 @@ from .models import Commit
 
 
 class CommitGraph:
-    """Store commits by hash and provide graph traversal algorithms."""
+    """해시 기반 커밋 저장 및 그래프 탐색"""
 
     def __init__(self) -> None:
         self.commits: dict[str, Commit] = {}
         self.children: dict[str, list[str]] = {}
 
     def clear(self) -> None:
-        """Remove all nodes and adjacency information."""
+        """전체 노드 및 인접 정보 삭제"""
 
         self.commits.clear()
         self.children.clear()
 
     def add(self, commit: Commit) -> None:
-        """Add a new node after validating its hash and parent references."""
+        """해시 및 부모 참조 검증 후 노드 추가"""
 
         if commit.hash in self.commits:
             raise ValueError("duplicate commit hash")
@@ -33,7 +33,7 @@ class CommitGraph:
             self.children[parent].append(commit.hash)
 
     def topological_order(self) -> list[Commit]:
-        """Use Kahn's algorithm so every parent appears before its children."""
+        """칸 알고리즘 기반 부모 우선 위상 정렬"""
 
         indegree = {commit_hash: 0 for commit_hash in self.commits}
         for commit in self.commits.values():
@@ -56,7 +56,7 @@ class CommitGraph:
         return result
 
     def shortest_path(self, start: str, end: str) -> list[str] | None:
-        """Find the shortest undirected path, breaking ties lexicographically."""
+        """무방향 최단 경로 탐색 및 동률 시 사전순 선택"""
 
         if start == end:
             return [start]
@@ -83,7 +83,7 @@ class CommitGraph:
         return None
 
     def ancestors(self, commit_hash: str) -> list[Commit]:
-        """Return every reachable ancestor once, in parent-before-child order."""
+        """도달 가능한 조상의 중복 제거 및 부모 우선 조회"""
 
         discovered: set[str] = set()
         stack = list(self.commits[commit_hash].parents)

@@ -6,7 +6,7 @@ from datetime import datetime
 
 @dataclass(frozen=True)
 class Commit:
-    """A commit node whose parent edges always point to older commits."""
+    """기존 커밋을 부모로 참조하는 커밋 노드"""
 
     hash: str
     message: str

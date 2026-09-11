@@ -1,4 +1,4 @@
-"""Repository operations tested without parsing or formatted CLI output."""
+"""CLI와 독립적인 저장소 기능 검증"""
 
 import unittest
 

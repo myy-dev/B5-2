@@ -1,1 +1,1 @@
-"""Mini Git algorithm, repository, and CLI tests."""
+"""미니 깃 알고리즘·저장소·CLI 테스트"""

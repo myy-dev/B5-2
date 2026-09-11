@@ -1,4 +1,4 @@
-"""Entry point for the in-memory Mini Git CLI."""
+"""메모리 기반 미니 깃 CLI 진입점"""
 
 from mini_git.cli import repl
 

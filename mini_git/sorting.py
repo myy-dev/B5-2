@@ -9,7 +9,7 @@ Comparator = Callable[[T, T], int]
 
 
 def merge_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
-    """Return a stable merge-sorted list without using a standard sorting API."""
+    """내장 정렬 함수 없이 직접 구현한 안정 병합 정렬"""
 
     values = list(items)
     if len(values) < 2:
@@ -36,7 +36,7 @@ def merge_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
 
 
 def insertion_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
-    """Return a stable insertion-sorted list for benchmark comparison."""
+    """성능 비교용 안정 삽입 정렬"""
 
     values = list(items)
     for index in range(1, len(values)):
@@ -50,7 +50,7 @@ def insertion_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
 
 
 def compare_date(left: Commit, right: Commit) -> int:
-    """Compare commits by timestamp, then hash."""
+    """커밋 시각·해시 순 비교"""
 
     left_key = (left.timestamp, left.hash)
     right_key = (right.timestamp, right.hash)
@@ -58,7 +58,7 @@ def compare_date(left: Commit, right: Commit) -> int:
 
 
 def compare_author(left: Commit, right: Commit) -> int:
-    """Compare normalized authors, then timestamp and hash."""
+    """소문자 작성자명·커밋 시각·해시 순 비교"""
 
     left_key = (left.author.lower(), left.timestamp, left.hash)
     right_key = (right.author.lower(), right.timestamp, right.hash)
@@ -66,6 +66,6 @@ def compare_author(left: Commit, right: Commit) -> int:
 
 
 def compare_number(left: int, right: int) -> int:
-    """Compare numeric values for benchmark sorting."""
+    """성능 측정용 숫자 비교"""
 
     return (left > right) - (left < right)

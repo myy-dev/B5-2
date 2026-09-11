@@ -1,4 +1,4 @@
-"""Automated requirement tests for the Mini Git implementation."""
+"""미니 깃 요구사항 자동 검증"""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from mini_git.sorting import (
 
 
 class MiniGitTests(unittest.TestCase):
-    """Preserve the command behavior and entry point through module changes."""
+    """모듈 변경에 따른 명령어 동작 및 진입점 유지 검증"""
 
     def setUp(self) -> None:
         self.app = MiniGit()
