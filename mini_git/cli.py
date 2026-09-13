@@ -168,7 +168,7 @@ class MiniGit:
         return (
             f"Input size: {result.size}\n"
             f"Merge sort: {result.merge_seconds:.6f}s\n"
-            f"Insertion sort: {result.insertion_seconds:.6f}s"
+            f"Bubble sort: {result.bubble_seconds:.6f}s"
         )
 
 

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from mini_git.graph import CommitGraph
 from mini_git.models import Commit
-from mini_git.sorting import insertion_sort, merge_sort
+from mini_git.sorting import bubble_sort, merge_sort
 
 
 class AlgorithmTests(unittest.TestCase):
@@ -38,7 +38,7 @@ class AlgorithmTests(unittest.TestCase):
         expected = [(1, "middle"), (2, "first"), (2, "last")]
         def compare(left, right):
             return (left[0] > right[0]) - (left[0] < right[0])
-        for algorithm in (merge_sort, insertion_sort):
+        for algorithm in (merge_sort, bubble_sort):
             with self.subTest(algorithm=algorithm.__name__):
                 original = list(values)
                 self.assertEqual(algorithm(values, compare), expected)

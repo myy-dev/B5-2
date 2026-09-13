@@ -14,7 +14,7 @@ from mini_git.cli import MiniGit
 from mini_git.models import Commit
 from mini_git.diff import line_diff
 from mini_git.sorting import (
-    compare_author, compare_date, compare_number, insertion_sort, merge_sort,
+    bubble_sort, compare_author, compare_date, compare_number, merge_sort,
 )
 
 
@@ -97,7 +97,7 @@ class MiniGitTests(unittest.TestCase):
         self.assertEqual([commit.hash for commit in by_author], ["a", "c", "b"])
         by_date = merge_sort(commits, compare_date)
         self.assertEqual([commit.hash for commit in by_date], ["a", "b", "c"])
-        self.assertEqual(insertion_sort([3, 1, 2], compare_number), [1, 2, 3])
+        self.assertEqual(bubble_sort([3, 1, 2], compare_number), [1, 2, 3])
 
         self.app.execute("init Alice")
         self._commit("one")
@@ -181,9 +181,9 @@ class MiniGitTests(unittest.TestCase):
         self.app.execute("init Alice")
         result = self.app.execute("benchmark 100")
         self.assertIn("Merge sort:", result)
-        self.assertIn("Insertion sort:", result)
+        self.assertIn("Bubble sort:", result)
         self.assertEqual(self.app.execute("benchmark 0"), "Invalid args")
-        self.assertEqual(self.app.execute("benchmark 5001"), "Invalid args")
+        self.assertEqual(self.app.execute("benchmark 10001"), "Invalid args")
         self.assertEqual(self.app.execute("benchmark many"), "Invalid args")
 
     def test_hashes_are_unique_and_parent_references_are_older(self) -> None:

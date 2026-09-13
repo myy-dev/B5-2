@@ -35,17 +35,18 @@ def merge_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
     return merged
 
 
-def insertion_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
-    """성능 비교용 안정 삽입 정렬"""
+def bubble_sort(items: Iterable[T], compare: Comparator[T]) -> list[T]:
+    """성능 비교용 안정 버블 정렬"""
 
     values = list(items)
-    for index in range(1, len(values)):
-        current = values[index]
-        position = index - 1
-        while position >= 0 and compare(values[position], current) > 0:
-            values[position + 1] = values[position]
-            position -= 1
-        values[position + 1] = current
+    for end in range(len(values) - 1, 0, -1):
+        swapped = False
+        for index in range(end):
+            if compare(values[index], values[index + 1]) > 0:
+                values[index], values[index + 1] = values[index + 1], values[index]
+                swapped = True
+        if not swapped:
+            break
     return values
 
 
