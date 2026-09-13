@@ -41,7 +41,9 @@ class Repository:
     def head(self) -> str | None:
         """현재 브랜치의 마지막 커밋 해시 조회"""
 
-        return None if self.current_branch is None else self.branches[self.current_branch]
+        return (
+            None if self.current_branch is None else self.branches[self.current_branch]
+        )
 
     def require_initialized(self) -> None:
         """저장소 초기화 여부 검사"""

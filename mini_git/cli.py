@@ -20,11 +20,15 @@ class MiniGit:
 
     def _branch_labels(self, commit_hash: str) -> str:
         names = [
-            name for name, target in self.repository.branches.items() if target == commit_hash
+            name
+            for name, target in self.repository.branches.items()
+            if target == commit_hash
         ]
         return f" [{' '.join(names)}]" if names else ""
 
-    def _format_commits(self, commits: Iterable[Commit], show_branches: bool = False) -> str:
+    def _format_commits(
+        self, commits: Iterable[Commit], show_branches: bool = False
+    ) -> str:
         blocks: list[str] = []
         for commit in commits:
             timestamp = commit.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -133,7 +137,9 @@ class MiniGit:
         self._require_count(args, 1)
         argument = args[0]
         if argument.lower().startswith("--author="):
-            commits = self.repository.search(argument[len("--author="):], by_author=True)
+            commits = self.repository.search(
+                argument[len("--author=") :], by_author=True
+            )
         elif argument.startswith("--"):
             return "Invalid args"
         else:

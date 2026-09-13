@@ -11,7 +11,9 @@ def line_diff(old_lines: list[str], new_lines: list[str]) -> list[str]:
     for old_index in range(old_count - 1, -1, -1):
         for new_index in range(new_count - 1, -1, -1):
             if old_lines[old_index] == new_lines[new_index]:
-                lengths[old_index][new_index] = lengths[old_index + 1][new_index + 1] + 1
+                lengths[old_index][new_index] = (
+                    lengths[old_index + 1][new_index + 1] + 1
+                )
             else:
                 skip_old = lengths[old_index + 1][new_index]
                 skip_new = lengths[old_index][new_index + 1]

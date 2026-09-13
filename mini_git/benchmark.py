@@ -36,4 +36,6 @@ def run_benchmark(size: int) -> BenchmarkResult:
     bubble_start = time.perf_counter()
     bubble_result = bubble_sort(values, compare_number)
     bubble_seconds = time.perf_counter() - bubble_start
-    return BenchmarkResult(size, merge_seconds, bubble_seconds, merge_result == bubble_result)
+    return BenchmarkResult(
+        size, merge_seconds, bubble_seconds, merge_result == bubble_result
+    )

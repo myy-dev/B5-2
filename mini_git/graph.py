@@ -39,7 +39,9 @@ class CommitGraph:
         for commit in self.commits.values():
             indegree[commit.hash] = len(commit.parents)
 
-        available = [commit_hash for commit_hash, degree in indegree.items() if degree == 0]
+        available = [
+            commit_hash for commit_hash, degree in indegree.items() if degree == 0
+        ]
         heapq.heapify(available)
         result: list[Commit] = []
 
@@ -94,4 +96,6 @@ class CommitGraph:
             discovered.add(current)
             stack.extend(self.commits[current].parents)
 
-        return [commit for commit in self.topological_order() if commit.hash in discovered]
+        return [
+            commit for commit in self.topological_order() if commit.hash in discovered
+        ]
