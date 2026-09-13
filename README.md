@@ -14,7 +14,7 @@ B5-2/
 │   ├── models.py        # Commit 데이터 모델
 │   ├── graph.py         # 커밋 그래프·경로·조상 탐색
 │   ├── index.py         # 메시지·작성자 역색인
-│   ├── sorting.py       # 병합·삽입 정렬 및 비교 함수
+│   ├── sorting.py       # 병합·버블 정렬 및 비교 함수
 │   ├── diff.py          # LCS 기반 줄 비교
 │   ├── repository.py    # 저장소 상태·브랜치·커밋·검색 관리
 │   ├── cli.py           # 명령 해석·출력·파일 읽기·REPL
@@ -24,9 +24,9 @@ B5-2/
 │   ├── test_algorithms.py  # 그래프·정렬 검증
 │   ├── test_repository.py  # 저장소 연산·오류·상태 일관성 검증
 │   └── test_cli.py         # 명령·입출력·전체 구현 문법 검증
-├── ALGORITHMS.md        # 자료구조와 알고리즘 설명
-├── USAGE.md             # 실행 방법과 CLI 문법
-├── DEMO.md              # 시연 순서·명령·예상 결과
+├── docs/
+│   ├── USER_GUIDE.md    # 설치·실행·CLI 사용 방법
+│   └── USER_DEMO.md     # 기능별 사용자 시연 명령
 └── README.md
 ```
 
@@ -219,14 +219,7 @@ B5-2/
 
 ## 결과물
 
-### 알고리즘 설계
+### 사용자 가이드
 
-- [자료구조와 알고리즘](ALGORITHMS.md)
-
-### 사용 가이드
-
-- [사용법 및 CLI 문법](USAGE.md)
-
-### 시연 시나리오
-
-- [시연 순서·명령·예상 결과](DEMO.md)
+- [사용자 가이드](docs/USER_GUIDE.md)
+- [사용자 시연 예시](docs/USER_DEMO.md)
