@@ -130,7 +130,7 @@ class Repository:
         ):
             raise RepositoryError("invalid_args")
         return self._create_commit(
-            f"Merge branch '{target_branch}'", (current_head, target_head)
+            f"'{target_branch}' 브랜치 병합", (current_head, target_head)
         )
 
     def log(self, sort_by: str | None = None) -> list[Commit]:

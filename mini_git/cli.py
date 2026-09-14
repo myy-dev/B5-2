@@ -34,9 +34,9 @@ class MiniGit:
             timestamp = commit.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
             labels = self._branch_labels(commit.hash) if show_branches else ""
             blocks.append(
-                f"commit {commit.hash} ({commit.author}, {timestamp}){labels}\n{commit.message}"
+                f"커밋 {commit.hash} ({commit.author}, {timestamp}){labels}\n{commit.message}"
             )
-        return "\n\n".join(blocks) if blocks else "No commits."
+        return "\n\n".join(blocks) if blocks else "커밋이 없습니다."
 
     def _format_created_commit(self, commit: Commit) -> str:
         return f"[{self.repository.current_branch} {commit.hash}] {commit.message}"
@@ -49,10 +49,10 @@ class MiniGit:
     @staticmethod
     def _format_error(error: RepositoryError) -> str:
         messages = {
-            "invalid_args": "Invalid args",
-            "not_initialized": "Repository not initialized.",
-            "unknown_branch": f"Unknown branch: {error.detail}",
-            "unknown_commit": f"Unknown commit: {error.detail}",
+            "invalid_args": "잘못된 인자입니다.",
+            "not_initialized": "저장소가 초기화되지 않았습니다.",
+            "unknown_branch": f"존재하지 않는 브랜치: {error.detail}",
+            "unknown_commit": f"존재하지 않는 커밋: {error.detail}",
         }
         return messages[error.code]
 
@@ -62,13 +62,13 @@ class MiniGit:
         try:
             parts = shlex.split(line)
         except ValueError:
-            return "Invalid args"
+            return "잘못된 인자입니다."
         if not parts:
-            return "Invalid args"
+            return "잘못된 인자입니다."
 
         command, args = parts[0].lower(), parts[1:]
         if command in {"exit", "quit"}:
-            return "__EXIT__" if not args else "Invalid args"
+            return "__EXIT__" if not args else "잘못된 인자입니다."
         handlers = {
             "init": self._init,
             "branch": self._branch,
@@ -84,7 +84,7 @@ class MiniGit:
         }
         handler = handlers.get(command)
         if handler is None:
-            return "Invalid args"
+            return "잘못된 인자입니다."
         try:
             if command != "init":
                 self.repository.require_initialized()
@@ -96,20 +96,20 @@ class MiniGit:
         self._require_count(args, 1)
         self.repository.initialize(args[0])
         return (
-            "Initialized repository.\n"
-            "Current branch: main\n"
-            f"Current user: {self.repository.author}"
+            "저장소를 초기화했습니다.\n"
+            "현재 브랜치: main\n"
+            f"현재 사용자: {self.repository.author}"
         )
 
     def _branch(self, args: list[str]) -> str:
         self._require_count(args, 1)
         self.repository.create_branch(args[0])
-        return f"Created branch: {args[0]}"
+        return f"브랜치를 생성했습니다: {args[0]}"
 
     def _switch(self, args: list[str]) -> str:
         self._require_count(args, 1)
         self.repository.switch(args[0])
-        return f"Switched to branch: {args[0]}"
+        return f"브랜치를 전환했습니다: {args[0]}"
 
     def _commit(self, args: list[str]) -> str:
         self._require_count(args, 1)
@@ -121,13 +121,13 @@ class MiniGit:
         self._require_count(args, 1)
         option = args[0].lower()
         if option not in {"--sort-by=date", "--sort-by=author"}:
-            return "Invalid args"
+            return "잘못된 인자입니다."
         return self._format_commits(self.repository.log(option.split("=", 1)[1]))
 
     def _path(self, args: list[str]) -> str:
         self._require_count(args, 2)
         path = self.repository.path(args[0], args[1])
-        return "No path" if path is None else f"Path: {' -> '.join(path)}"
+        return "경로가 없습니다." if path is None else f"경로: {' -> '.join(path)}"
 
     def _ancestors(self, args: list[str]) -> str:
         self._require_count(args, 1)
@@ -141,10 +141,10 @@ class MiniGit:
                 argument[len("--author=") :], by_author=True
             )
         elif argument.startswith("--"):
-            return "Invalid args"
+            return "잘못된 인자입니다."
         else:
             commits = self.repository.search(argument)
-        lines = [f"Found {len(commits)} commit(s):"]
+        lines = [f"검색 결과: {len(commits)}개"]
         for commit in commits:
             lines.append(f"- {commit.hash} ({commit.author}): {commit.message}")
         return "\n".join(lines)
@@ -154,10 +154,12 @@ class MiniGit:
         try:
             old_lines = Path(args[0]).read_text(encoding="utf-8").splitlines()
             new_lines = Path(args[1]).read_text(encoding="utf-8").splitlines()
-        except (OSError, UnicodeError) as error:
-            return f"File error: {error}"
+        except UnicodeError:
+            return "파일 오류: UTF-8 텍스트 파일이 아닙니다."
+        except OSError:
+            return "파일 오류: 파일을 읽을 수 없습니다."
         result = line_diff(old_lines, new_lines)
-        return "\n".join(result) if result else "No differences."
+        return "\n".join(result) if result else "차이가 없습니다."
 
     def _merge(self, args: list[str]) -> str:
         self._require_count(args, 1)
@@ -168,13 +170,13 @@ class MiniGit:
         try:
             result = run_benchmark(int(args[0]))
         except ValueError:
-            return "Invalid args"
+            return "잘못된 인자입니다."
         if not result.verified:
-            return "Benchmark verification failed."
+            return "벤치마크 검증에 실패했습니다."
         return (
-            f"Input size: {result.size}\n"
-            f"Merge sort: {result.merge_seconds:.6f}s\n"
-            f"Bubble sort: {result.bubble_seconds:.6f}s"
+            f"입력 크기: {result.size}\n"
+            f"병합 정렬: {result.merge_seconds:.6f}초\n"
+            f"버블 정렬: {result.bubble_seconds:.6f}초"
         )
 
 
@@ -189,7 +191,7 @@ def repl() -> None:
             print()
             break
         except KeyboardInterrupt:
-            print("\nUse exit or quit to close Mini Git.")
+            print("\n종료하려면 exit 또는 quit을 입력하세요.")
             continue
 
         result = app.execute(line)

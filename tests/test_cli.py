@@ -33,7 +33,7 @@ class MiniGitTests(unittest.TestCase):
 
     def test_init_is_case_insensitive_and_resets_repository(self) -> None:
         result = self.app.execute('InIt "Alice Kim"')
-        self.assertIn("Initialized repository.", result)
+        self.assertIn("저장소를 초기화했습니다.", result)
         self.assertEqual(self.app.repository.current_branch, "main")
         self.assertEqual(self.app.repository.author, "Alice Kim")
         temporary = self._commit("temporary")
@@ -54,8 +54,12 @@ class MiniGitTests(unittest.TestCase):
     def test_branch_switch_commit_log_and_indexes(self) -> None:
         self.app.execute("init Alice")
         root = self._commit("Initial commit")
-        self.assertEqual(self.app.execute("branch feature"), "Created branch: feature")
-        self.assertEqual(self.app.execute("switch feature"), "Switched to branch: feature")
+        self.assertEqual(
+            self.app.execute("branch feature"), "브랜치를 생성했습니다: feature"
+        )
+        self.assertEqual(
+            self.app.execute("switch feature"), "브랜치를 전환했습니다: feature"
+        )
         feature = self._commit("Add login feature")
         self.app.execute("switch main")
         main = self._commit("Add payment feature")
@@ -102,8 +106,8 @@ class MiniGitTests(unittest.TestCase):
         self.app.execute("init Alice")
         self._commit("one")
         self._commit("two")
-        self.assertIn("commit", self.app.execute("log --sort-by=date"))
-        self.assertIn("commit", self.app.execute("log --sort-by=author"))
+        self.assertIn("커밋", self.app.execute("log --sort-by=date"))
+        self.assertIn("커밋", self.app.execute("log --sort-by=author"))
 
     def test_disconnected_commits_have_no_path(self) -> None:
         self.app.execute("init Alice")
@@ -111,7 +115,7 @@ class MiniGitTests(unittest.TestCase):
         first = self._commit("main root")
         self.app.execute("switch island")
         second = self._commit("island root")
-        self.assertEqual(self.app.execute(f"path {first} {second}"), "No path")
+        self.assertEqual(self.app.execute(f"path {first} {second}"), "경로가 없습니다.")
 
     def test_merge_creates_two_parent_commit_and_updates_index(self) -> None:
         self.app.execute("init Alice")
@@ -127,15 +131,17 @@ class MiniGitTests(unittest.TestCase):
         self.assertEqual(self.app.repository.graph.commits[merge_hash].parents, (feature, main))
         ancestor_hashes = [commit.hash for commit in self.app.repository.graph.ancestors(merge_hash)]
         self.assertEqual(set(ancestor_hashes), {root, main, feature})
-        self.assertIn(merge_hash, self.app.execute("search Merge"))
-        self.assertEqual(self.app.execute("merge feature"), "Invalid args")
+        self.assertIn(merge_hash, self.app.execute("search 병합"))
+        self.assertEqual(self.app.execute("merge feature"), "잘못된 인자입니다.")
 
         same_head = MiniGit()
         same_head.execute("init Alice")
         same_head.execute("commit root")
         same_head.execute("branch feature")
-        self.assertEqual(same_head.execute("merge feature"), "Invalid args")
-        self.assertEqual(same_head.execute("merge missing"), "Unknown branch: missing")
+        self.assertEqual(same_head.execute("merge feature"), "잘못된 인자입니다.")
+        self.assertEqual(
+            same_head.execute("merge missing"), "존재하지 않는 브랜치: missing"
+        )
 
     def test_ancestors_and_standard_errors(self) -> None:
         self.app.execute("init Alice")
@@ -143,19 +149,26 @@ class MiniGitTests(unittest.TestCase):
         child = self._commit("child")
         self.assertIn(root, self.app.execute(f"ancestors {child}"))
         self.assertNotIn(child, self.app.execute(f"ancestors {child}"))
-        self.assertEqual(self.app.execute("switch missing"), "Unknown branch: missing")
-        self.assertEqual(self.app.execute("path missing also-missing"), "Unknown commit: missing")
-        self.assertEqual(self.app.execute("commit"), "Invalid args")
-        self.assertEqual(self.app.execute("nonsense"), "Invalid args")
+        self.assertEqual(
+            self.app.execute("switch missing"), "존재하지 않는 브랜치: missing"
+        )
+        self.assertEqual(
+            self.app.execute("path missing also-missing"),
+            "존재하지 않는 커밋: missing",
+        )
+        self.assertEqual(self.app.execute("commit"), "잘못된 인자입니다.")
+        self.assertEqual(self.app.execute("nonsense"), "잘못된 인자입니다.")
 
     def test_malformed_and_whitespace_only_arguments_are_invalid(self) -> None:
-        self.assertEqual(self.app.execute("nonsense"), "Invalid args")
-        self.assertEqual(self.app.execute('init "unterminated'), "Invalid args")
+        self.assertEqual(self.app.execute("nonsense"), "잘못된 인자입니다.")
+        self.assertEqual(self.app.execute('init "unterminated'), "잘못된 인자입니다.")
         self.app.execute("init Alice")
-        self.assertEqual(self.app.execute('branch "   "'), "Invalid args")
-        self.assertEqual(self.app.execute('commit "   "'), "Invalid args")
-        self.assertEqual(self.app.execute('search "   "'), "Invalid args")
-        self.assertEqual(self.app.execute('search --author="   "'), "Invalid args")
+        self.assertEqual(self.app.execute('branch "   "'), "잘못된 인자입니다.")
+        self.assertEqual(self.app.execute('commit "   "'), "잘못된 인자입니다.")
+        self.assertEqual(self.app.execute('search "   "'), "잘못된 인자입니다.")
+        self.assertEqual(
+            self.app.execute('search --author="   "'), "잘못된 인자입니다."
+        )
 
     def test_line_diff_marks_common_deleted_and_added_lines(self) -> None:
         self.assertEqual(
@@ -175,16 +188,19 @@ class MiniGitTests(unittest.TestCase):
                 "  same\n  old",
             )
             missing = Path(directory) / "missing.txt"
-            self.assertTrue(self.app.execute(f'diff "{missing}" "{new_path}"').startswith("File error:"))
+            self.assertEqual(
+                self.app.execute(f'diff "{missing}" "{new_path}"'),
+                "파일 오류: 파일을 읽을 수 없습니다.",
+            )
 
     def test_benchmark_compares_two_algorithms(self) -> None:
         self.app.execute("init Alice")
         result = self.app.execute("benchmark 100")
-        self.assertIn("Merge sort:", result)
-        self.assertIn("Bubble sort:", result)
-        self.assertEqual(self.app.execute("benchmark 0"), "Invalid args")
-        self.assertEqual(self.app.execute("benchmark 10001"), "Invalid args")
-        self.assertEqual(self.app.execute("benchmark many"), "Invalid args")
+        self.assertIn("병합 정렬:", result)
+        self.assertIn("버블 정렬:", result)
+        self.assertEqual(self.app.execute("benchmark 0"), "잘못된 인자입니다.")
+        self.assertEqual(self.app.execute("benchmark 10001"), "잘못된 인자입니다.")
+        self.assertEqual(self.app.execute("benchmark many"), "잘못된 인자입니다.")
 
     def test_hashes_are_unique_and_parent_references_are_older(self) -> None:
         self.app.execute("init Alice")
@@ -219,4 +235,4 @@ class MiniGitTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0)
         self.assertGreaterEqual(result.stdout.count("mini-git> "), 2)
-        self.assertIn("Initialized repository.", result.stdout)
+        self.assertIn("저장소를 초기화했습니다.", result.stdout)

@@ -53,7 +53,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(merged.parents, (feature.hash, main.hash))
         self.assertEqual(repository.branches, {"main": main.hash, "feature": merged.hash})
         self.assertEqual(repository.head, merged.hash)
-        self.assertEqual(repository.search("merge"), [merged])
+        self.assertEqual(repository.search("병합"), [merged])
         self.assertIn(merged, repository.search("ALICE", by_author=True))
         self.assertEqual(repository.ancestors(merged.hash), [root, main, feature])
         self.assertEqual(repository.path(feature.hash, main.hash), [feature.hash, root.hash, main.hash])

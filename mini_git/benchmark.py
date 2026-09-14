@@ -22,7 +22,7 @@ def run_benchmark(size: int) -> BenchmarkResult:
     """동일한 입력 1~10000개에 대한 두 정렬의 실행 시간 측정"""
 
     if size < 1 or size > 10000:
-        raise ValueError("size must be between 1 and 10000")
+        raise ValueError("입력 크기는 1 이상 10000 이하여야 합니다")
     values: list[int] = []
     state = 20240318
     for _ in range(size):

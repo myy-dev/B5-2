@@ -22,10 +22,10 @@ class CommitGraph:
         """해시 및 부모 참조 검증 후 노드 추가"""
 
         if commit.hash in self.commits:
-            raise ValueError("duplicate commit hash")
+            raise ValueError("중복된 커밋 해시")
         for parent in commit.parents:
             if parent not in self.commits:
-                raise ValueError("unknown parent commit")
+                raise ValueError("존재하지 않는 부모 커밋")
 
         self.commits[commit.hash] = commit
         self.children[commit.hash] = []
@@ -54,7 +54,7 @@ class CommitGraph:
                     heapq.heappush(available, child)
 
         if len(result) != len(self.commits):
-            raise RuntimeError("commit graph contains a cycle")
+            raise RuntimeError("커밋 그래프에 사이클이 있습니다")
         return result
 
     def shortest_path(self, start: str, end: str) -> list[str] | None:
